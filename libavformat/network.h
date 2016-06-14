@@ -297,4 +297,10 @@ int ff_http_match_no_proxy(const char *no_proxy, const char *hostname);
 
 int ff_socket(int domain, int type, int protocol);
 
+
+#if HAVE_POLL_H
+/* Initialized in network.c */
+extern int (*ff_poll) (struct pollfd *__fds, nfds_t __nfds, int __timeout);
+#endif
+
 #endif /* AVFORMAT_NETWORK_H */

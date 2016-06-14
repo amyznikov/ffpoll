@@ -27,6 +27,9 @@
 #include "libavutil/mem.h"
 #include "libavutil/time.h"
 
+
+int (*ff_poll) (struct pollfd *__fds, nfds_t __nfds, int __timeout) = poll;
+
 int ff_tls_init(void)
 {
 #if CONFIG_TLS_OPENSSL_PROTOCOL
@@ -75,7 +78,7 @@ int ff_network_wait_fd(int fd, int write)
     int ev = write ? POLLOUT : POLLIN;
     struct pollfd p = { .fd = fd, .events = ev, .revents = 0 };
     int ret;
-    ret = poll(&p, 1, POLLING_TIME);
+    ret = ff_poll(&p, 1, POLLING_TIME);
     return ret < 0 ? ff_neterrno() : p.revents & (ev | POLLERR | POLLHUP) ? 0 : AVERROR(EAGAIN);
 }
 
@@ -151,7 +154,7 @@ static int ff_poll_interrupt(struct pollfd *p, nfds_t nfds, int timeout,
     do {
         if (ff_check_interrupt(cb))
             return AVERROR_EXIT;
-        ret = poll(p, nfds, POLLING_TIME);
+        ret = ff_poll(p, nfds, POLLING_TIME);
         if (ret != 0)
             break;
     } while (timeout <= 0 || runs-- > 0);
